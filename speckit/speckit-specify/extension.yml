@@ -1,0 +1,31 @@
+schema_version: "1.0"
+
+extension:
+  id: speckit-specify
+  name: "Specify Lifecycle Hooks"
+  version: "0.1.0"
+  description: "Before and after lifecycle hooks for /speckit.specify"
+
+requires:
+  speckit_version: ">=0.1.0"
+
+provides:
+  commands:
+    - name: speckit.speckit-specify.before
+      file: commands/speckit.speckit-specify.before.md
+      description: "Hook executed before /speckit.specify"
+    - name: speckit.speckit-specify.after
+      file: commands/speckit.speckit-specify.after.md
+      description: "Hook executed after /speckit.specify"
+
+hooks:
+  before_specify:
+    command: speckit.speckit-specify.before
+    optional: true
+    prompt: "Run before_specify hook?"
+    description: "Before /speckit.specify hook"
+  after_specify:
+    command: speckit.speckit-specify.after
+    optional: true
+    prompt: "Run after_specify hook?"
+    description: "After /speckit.specify hook"
