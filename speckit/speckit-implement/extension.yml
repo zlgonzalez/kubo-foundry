@@ -1,0 +1,31 @@
+schema_version: "1.0"
+
+extension:
+  id: speckit-implement
+  name: "Implement Lifecycle Hooks"
+  version: "0.1.0"
+  description: "Before and after lifecycle hooks for /speckit.implement; pre-hook generates integration tests from the spec before implementation"
+
+requires:
+  speckit_version: ">=0.1.0"
+
+provides:
+  commands:
+    - name: speckit.speckit-implement.before
+      file: commands/speckit.speckit-implement.before.md
+      description: "Generate integration tests from the spec before implementation begins"
+    - name: speckit.speckit-implement.after
+      file: commands/speckit.speckit-implement.after.md
+      description: "Hook executed after /speckit.implement"
+
+hooks:
+  before_implement:
+    command: speckit.speckit-implement.before
+    optional: false
+    prompt: "Generate integration tests from the spec before implementation?"
+    description: "Generate integration tests from the feature spec before implementation"
+  after_implement:
+    command: speckit.speckit-implement.after
+    optional: true
+    prompt: "Run after_implement hook?"
+    description: "After /speckit.implement hook"

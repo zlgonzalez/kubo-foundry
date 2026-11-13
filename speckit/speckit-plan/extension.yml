@@ -1,0 +1,31 @@
+schema_version: "1.0"
+
+extension:
+  id: speckit-plan
+  name: "Plan Lifecycle Hooks"
+  version: "0.1.0"
+  description: "Before and after lifecycle hooks for /speckit.plan"
+
+requires:
+  speckit_version: ">=0.1.0"
+
+provides:
+  commands:
+    - name: speckit.speckit-plan.before
+      file: commands/speckit.speckit-plan.before.md
+      description: "Hook executed before /speckit.plan"
+    - name: speckit.speckit-plan.after
+      file: commands/speckit.speckit-plan.after.md
+      description: "Hook executed after /speckit.plan"
+
+hooks:
+  before_plan:
+    command: speckit.speckit-plan.before
+    optional: true
+    prompt: "Run before_plan hook?"
+    description: "Before /speckit.plan hook"
+  after_plan:
+    command: speckit.speckit-plan.after
+    optional: true
+    prompt: "Run after_plan hook?"
+    description: "After /speckit.plan hook"
