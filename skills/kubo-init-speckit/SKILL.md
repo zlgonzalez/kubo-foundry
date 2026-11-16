@@ -1,11 +1,11 @@
 ---
 name: kubo-init-speckit
-description: Initialize GitHub Spec Kit in a repository (if needed), install all Spec Kit extensions from kubo-foundry's speckit/ directory, copy context/AGENTS.md to the repository root, install mcp/ servers as Antigravity workspace plugins, and copy the agy-parallel-review and speckit-converge skills to the repository. Use when setting up Spec Kit, AGENTS.md, and Kubo MCP/Spec Kit tooling in a project.
+description: Initialize GitHub Spec Kit in a repository (if needed), install all Spec Kit extensions from kubo-foundry's speckit/ directory, copy context/AGENTS.md to the repository root, install mcp/ servers as Antigravity workspace plugins, and copy all skills from kubo-foundry's skills/ directory to the repository. Use when setting up Spec Kit, AGENTS.md, and Kubo MCP/Spec Kit tooling in a project.
 ---
 
 # Kubo Init Spec Kit
 
-Initialize Spec Kit in the target repository (if `.specify/` does not already exist), install every Spec Kit extension from `kubo-foundry`'s `speckit/` directory, copy `context/AGENTS.md` to the repository root (`./AGENTS.md`), install every MCP server in `mcp/` as an Antigravity workspace plugin under `.agents/plugins/<server>/`, and copy `skills/agy-parallel-review/` and `skills/speckit-converge/` into both `.agent/skills/` and `.agents/skills/` (creating those directories if they do not exist, plus any other active assistant skills directory).
+Initialize Spec Kit in the target repository (if `.specify/` does not already exist), install every Spec Kit extension from `kubo-foundry`'s `speckit/` directory, copy `context/AGENTS.md` to the repository root (`./AGENTS.md`), install every MCP server in `mcp/` as an Antigravity workspace plugin under `.agents/plugins/<server>/`, and copy all skills from `skills/` into both `.agent/skills/` and `.agents/skills/` (creating those directories if they do not exist, plus any other active assistant skills directory).
 
 ## Prerequisites
 
@@ -43,16 +43,16 @@ Check if `.specify/` exists in the target repository root:
 
 Run the script below from the target repository root (setting `SKILL_FILE` to this `SKILL.md` path if known). It:
 
-1. Resolves `FOUNDRY_DIR` (containing `speckit/*/extension.yml`, `context/AGENTS.md`, `mcp/*/mcp.json`, `skills/agy-parallel-review/SKILL.md`, and `skills/speckit-converge/SKILL.md`) from:
+1. Resolves `FOUNDRY_DIR` (containing `speckit/*/extension.yml`, `context/AGENTS.md`, `mcp/*/mcp.json`, and `skills/*/SKILL.md`) from:
    - `.` (current repository),
    - `<resolved_skill_dir>/../..` (when `kubo-init-speckit` is symlinked from a `kubo-foundry` clone),
    - `"$KUBO_FOUNDRY_DIR"` (when `KUBO_FOUNDRY_DIR` is set),
-   - a temporary shallow sparse clone of `speckit/`, `context/`, `mcp/`, `skills/agy-parallel-review/`, and `skills/speckit-converge/` from `zlgonzalez/kubo-foundry`,
+   - a temporary shallow sparse clone of `speckit/`, `context/`, `mcp/`, and `skills/` from `zlgonzalez/kubo-foundry`,
    - or common local `kubo-foundry` checkout paths under `$HOME`.
 2. Installs every extension in `speckit/` via `specify extension add --dev` (preserving any `*-config.yml` / `*-config.local.yml` files on reinstall).
 3. Copies `context/AGENTS.md` to `./AGENTS.md` at the target repository root (overwriting `./AGENTS.md` if present).
 4. Installs every `mcp/<server>/mcp.json` into `.agents/plugins/<server>/` (`plugin.json` + `mcp_config.json`) so Antigravity App, IDE, and CLI can discover and use each MCP server in the repository.
-5. Creates `.agent/skills/` and `.agents/skills/` (plus any other active assistant skills directory, e.g., `.claude/skills/`) if they do not already exist and copies `skills/agy-parallel-review/` and `skills/speckit-converge/` into `<skills_dir>/<skill>/`, replacing any prior copy cleanly.
+5. Creates `.agent/skills/` and `.agents/skills/` (plus any other active assistant skills directory, e.g., `.claude/skills/`) if they do not already exist and copies all skills from `skills/` into `<skills_dir>/<skill>/`, replacing any prior copy cleanly.
 
 ```bash
 set -euo pipefail
@@ -77,16 +77,14 @@ has_mcp_configs() {
   return 1
 }
 
-BUNDLED_SKILLS=(agy-parallel-review speckit-converge)
-
-has_bundled_skills() {
+has_skills() {
   local dir="$1"
   [ -d "$dir" ] || return 1
-  local skill_name
-  for skill_name in "${BUNDLED_SKILLS[@]}"; do
-    [ -f "$dir/$skill_name/SKILL.md" ] || return 1
+  local f
+  for f in "$dir"/*/SKILL.md; do
+    [ -f "$f" ] && return 0
   done
-  return 0
+  return 1
 }
 
 has_foundry_assets() {
@@ -95,7 +93,7 @@ has_foundry_assets() {
   has_extensions "$dir/speckit" \
     && [ -f "$dir/context/AGENTS.md" ] \
     && has_mcp_configs "$dir/mcp" \
-    && has_bundled_skills "$dir/skills"
+    && has_skills "$dir/skills"
 }
 
 resolve_skills_dirs() {
@@ -183,7 +181,7 @@ if [ -z "$FOUNDRY_DIR" ]; then
   TMP_FOUNDRY="$(mktemp -d)"
   if GIT_TERMINAL_PROMPT=0 git clone --depth 1 --filter=blob:none --sparse https://github.com/zlgonzalez/kubo-foundry.git "$TMP_FOUNDRY" 2>/dev/null \
     || GIT_TERMINAL_PROMPT=0 git clone --depth 1 --filter=blob:none --sparse git@github.com:zlgonzalez/kubo-foundry.git "$TMP_FOUNDRY" 2>/dev/null; then
-    git -C "$TMP_FOUNDRY" sparse-checkout set speckit context mcp skills/agy-parallel-review skills/speckit-converge 2>/dev/null || true
+    git -C "$TMP_FOUNDRY" sparse-checkout set speckit context mcp skills 2>/dev/null || true
     if has_foundry_assets "$TMP_FOUNDRY"; then
       FOUNDRY_DIR="$TMP_FOUNDRY"
     fi
@@ -208,7 +206,7 @@ if [ -z "$FOUNDRY_DIR" ]; then
 fi
 
 if [ -z "$FOUNDRY_DIR" ]; then
-  echo "Error: Could not locate kubo-foundry assets (speckit/, context/AGENTS.md, mcp/, skills/agy-parallel-review/, skills/speckit-converge/)." >&2
+  echo "Error: Could not locate kubo-foundry assets (speckit/, context/AGENTS.md, mcp/, skills/)." >&2
   echo "Set KUBO_FOUNDRY_DIR to your local kubo-foundry checkout or push the assets to GitHub." >&2
   exit 1
 fi
@@ -286,7 +284,7 @@ with open(plugin_json_path, "w", encoding="utf-8") as f:
 ' "$server_name" "$mcp_file" "$plugin_dir/plugin.json" "$plugin_dir/mcp_config.json"
 done
 
-# 4. Copy bundled skills (agy-parallel-review, speckit-converge) to .agent/skills and .agents/skills (plus any other active skills directory)
+# 4. Copy all skills from skills/ to .agent/skills and .agents/skills (plus any other active skills directory)
 copied_parents=""
 skills_dirs="$(resolve_skills_dirs)"
 while IFS= read -r skills_dir; do
@@ -311,8 +309,10 @@ EOF
     copied_parents="$copied_parents
 $dest_parent_real"
   fi
-  for skill_name in "${BUNDLED_SKILLS[@]}"; do
-    src_skill_dir="$FOUNDRY_DIR/skills/$skill_name"
+  for src_skill_dir in "$FOUNDRY_DIR"/skills/*; do
+    [ -d "$src_skill_dir" ] || continue
+    [ -f "$src_skill_dir/SKILL.md" ] || continue
+    skill_name="$(basename "$src_skill_dir")"
     src_real="$(cd "$src_skill_dir" && pwd -P)"
     dest_real="$dest_parent_real/$skill_name"
     if [ "$src_real" = "$dest_real" ]; then
@@ -338,4 +338,4 @@ EOF
    done
    ```
    *(Note: if a server already exists globally in `~/.gemini/config/mcp_config.json` with the same key, Antigravity may report a name collision or require disabling one copy; also ensure referenced CLI binaries such as `codegraph` are on `PATH` for GUI-launched Antigravity sessions.)*
-4. **`agy-parallel-review` and `speckit-converge` skills:** Confirm `agy-parallel-review/SKILL.md`, `agy-parallel-review/scripts/run_review.sh`, and `speckit-converge/SKILL.md` exist in both `.agent/skills/` and `.agents/skills/` (as well as any other active assistant skills directory, such as `.claude/skills/`, if applicable) and match `skills/agy-parallel-review/` and `skills/speckit-converge/`.
+4. **Skills:** Confirm every skill from `skills/` (such as `agy-parallel-review`, `ai-service-annotator`, `kubo-init-speckit`, `speckit-converge`, `speckit-epic-scorer`, and `stitch-replicator`) exists in both `.agent/skills/` and `.agents/skills/` (as well as any other active assistant skills directory, such as `.claude/skills/`, if applicable) and matches `skills/<skill>/`.
