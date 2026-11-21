@@ -27,3 +27,7 @@ If no `.codegraph/` directory exists,run `codegraph init`. Run `codegraph sync` 
 
 - **Target affected tests:** Run `codegraph affected <changed-files...>` to locate impacted tests instead of reading or running unrelated test suites.
 - **Only `Read` flagged or unindexed files:** The file watcher lags writes by ~1s. If CodeGraph flags a file as changed on disk/pending sync, omits its body, or reports auto-sync recovering/disabled, `Read` only those specific files—keep trusting unflagged files. Use `Read`/`Grep` only for files CodeGraph does not index (e.g., configs, docs, scripts).
+
+# Installed Skills
+
+Before planning, writing tests, or implementing domain-specific work, check installed skills in `.agent/skills/` or `.agents/skills/` (or the active assistant's skills directory) for any skill whose description matches the task (for example, `risingwave`, `risingwave-best-practices`, `stitch-replicator`, `ai-service-annotator`). Read every matching `SKILL.md` and follow its rules and referenced docs before designing or writing code.
