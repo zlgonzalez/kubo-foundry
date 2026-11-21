@@ -331,11 +331,11 @@ EOF
 
 1. **Spec Kit extensions:** Run `specify extension list` and confirm all extensions from `speckit/` (including `speckit-specify`, `speckit-plan`, and `speckit-implement`) are **Enabled**, their hooks (`before_specify`, `after_specify`, `before_plan`, `after_plan`, `before_implement`, `after_implement`) appear in `.specify/extensions.yml`, and commands/skills exist in the active agent directory (e.g., `.agent/skills/`, `.claude/skills/`, `.gemini/commands/`).
 2. **`AGENTS.md`:** Confirm `./AGENTS.md` exists at the repository root and matches `context/AGENTS.md`.
-3. **Antigravity MCP workspace plugins:** Confirm `.agents/plugins/<server>/plugin.json` and `.agents/plugins/<server>/mcp_config.json` exist for each server in `mcp/` (for example `.agents/plugins/codegraph/`). If the `agy` CLI is installed, validate each plugin:
+3. **Antigravity MCP workspace plugins:** Confirm `.agents/plugins/<server>/plugin.json` and `.agents/plugins/<server>/mcp_config.json` exist for each server in `mcp/` (for example `.agents/plugins/codegraph/` and `.agents/plugins/risingwave/`). If the `agy` CLI is installed, validate each plugin:
    ```bash
    for p in .agents/plugins/*/; do
      [ -d "$p" ] && agy plugin validate "$p"
    done
    ```
-   *(Note: if a server already exists globally in `~/.gemini/config/mcp_config.json` with the same key, Antigravity may report a name collision or require disabling one copy; also ensure referenced CLI binaries such as `codegraph` are on `PATH` for GUI-launched Antigravity sessions.)*
-4. **Skills:** Confirm every skill from `skills/` (such as `agy-parallel-review`, `ai-service-annotator`, `kubo-init-speckit`, `speckit-converge`, `speckit-epic-scorer`, and `stitch-replicator`) exists in both `.agent/skills/` and `.agents/skills/` (as well as any other active assistant skills directory, such as `.claude/skills/`, if applicable) and matches `skills/<skill>/`.
+   *(Note: if a server already exists globally in `~/.gemini/config/mcp_config.json` with the same key, Antigravity may report a name collision or require disabling one copy; also ensure referenced CLI binaries such as `codegraph` and `docker` are on `PATH` for GUI-launched Antigravity sessions, and adjust `RISINGWAVE_CONNECTION_STR` in `.agents/plugins/risingwave/mcp_config.json` if targeting a non-default RisingWave instance.)*
+4. **Skills:** Confirm every skill from `skills/` (such as `agy-parallel-review`, `ai-service-annotator`, `kubo-init-speckit`, `risingwave`, `risingwave-best-practices`, `speckit-converge`, `speckit-epic-scorer`, and `stitch-replicator`) exists in both `.agent/skills/` and `.agents/skills/` (as well as any other active assistant skills directory, such as `.claude/skills/`, if applicable) and matches `skills/<skill>/`.
